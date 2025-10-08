@@ -10,71 +10,63 @@ const dishes = [
     id: '1',
     name: 'Pad Thai',
     price: 8.99,
-    image: 'https://via.placeholder.com/800x500.png?text=Pad+Thai',
-    // local option: image: require('../../assets/pad_thai.jpg')
+    image: require('../../assets/pad-thai.jpg'),
+    
   },
   {
     id: '2',
     name: 'Drunken Noodles (Pad Kee Mao)',
     price: 9.49,
-    image: 'https://via.placeholder.com/800x500.png?text=Drunken+Noodles',
-    // local option: image: require('../../assets/drunken_noodles.jpg')
+    image: require('../../assets/drunken-noodles.jpg'),
+    
   },
   {
     id: '3',
     name: 'Tom Yum Noodle Soup',
     price: 10.5,
-    image: 'https://via.placeholder.com/800x500.png?text=Tom+Yum+Noodles',
-    // local option: image: require('../../assets/tom_yum_noodles.jpg')
+    image: require('../../assets/tom-yum-noodles.jpg')
   },
   {
     id: '4',
     name: 'Khao Soi',
     price: 11.0,
-    image: 'https://via.placeholder.com/800x500.png?text=Khao+Soi',
-    // local option: image: require('../../assets/khao_soi.jpg')
+    image: require('../../assets/khao-soi.jpg')
   },
   {
     id: '5',
     name: 'Glass Noodles (Pad Woon Sen)',
     price: 8.5,
-    image: 'https://via.placeholder.com/800x500.png?text=Pad+Woon+Sen',
-    // local option: image: require('../../assets/pad_woon_sen.jpg')
+    image: require('../../assets/pad-woon-sen.jpg')
   },
   {
     id: '6',
     name: 'Boat Noodles (Kuay Teow Reua)',
     price: 7.99,
-    image: 'https://via.placeholder.com/800x500.png?text=Boat+Noodles',
-    // local option: image: require('../../assets/boat_noodles.jpg')
+    image: require('../../assets/boat-noodles.jpg')
   },
   {
     id: '7',
     name: 'Yen Ta Fo (Pink Noodle Soup)',
     price: 10.0,
-    image: 'https://via.placeholder.com/800x500.png?text=Yen+Ta+Fo',
-    // local option: image: require('../../assets/yen_ta_fo.jpg')
+    image: require('../../assets/yen-ta-fo.jpg')
   },
   {
     id: '8',
     name: 'Stir-fried Rice Noodles with Beef (Rad Na)',
     price: 9.25,
-    image: 'https://via.placeholder.com/800x500.png?text=Rad+Na',
-    // local option: image: require('../../assets/rad_na.jpg')
+    image: require('../../assets/rad-na.jpg')
   },
   {
     id: '9',
     name: 'Thai Curry Noodles (Panang Noodles)',
     price: 11.5,
-    image: 'https://via.placeholder.com/800x500.png?text=Panang+Noodles',
-    // local option: image: require('../../assets/panang_noodles.jpg')
+    image: require('../../assets/panang-noodles.jpg')
   },
   {
     id: '10',
-    name: 'Seafood Rice Noodle Stir-Fry',
+    name: 'Pad Mama',
     price: 12.0,
-    image: 'https://via.placeholder.com/800x500.png?text=Seafood+Stir+Fry',
-    // local option: image: require('../../assets/seafood_stirfry.jpg')
+    image: require('../../assets/pad-mama.jpg')
   },
 ];
 
