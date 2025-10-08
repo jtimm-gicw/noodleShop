@@ -6,6 +6,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 // import dishes from '../data/dishes';
 import DishCard from '../components/DishCard';
 import dishes from '../data/dishes';
+
+
 /**
  * HomeScreen
  * Shows a list of noodle dishes with images, name and price.
@@ -27,7 +29,7 @@ export default function HomeScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Noodle Dishes</Text>
+        <Text style={styles.title}>Sen Khong Rao Aroi Mak</Text>
         <Text style={styles.subtitle}>Tap a dish to view details or add to cart</Text>
       </View>
 
@@ -46,7 +48,7 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f6f6f8',
+    backgroundColor: '#FAF8E1', // solid light red background,
   },
   header: {
     paddingHorizontal: 16,
@@ -54,12 +56,21 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '700',
-  },
+  fontSize: 28,
+  fontWeight: '900',          // bold for readability
+  color: '#FF0000',           // bright red text for high contrast
+  textShadowColor: '#8B0000', // dark red glow for depth
+  textShadowOffset: { width: 0, height: 0 },
+  textShadowRadius: 10,       // creates neon-like glow
+  fontFamily: 'Cochin',       // playful, still legible font
+  textAlign: 'center',
+  paddingHorizontal: 8,
+  paddingVertical: 4,
+},
+
   subtitle: {
     marginTop: 4,
-    fontSize: 14,
+    fontSize: 11,
     color: '#666',
   },
   list: {

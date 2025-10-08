@@ -17,6 +17,12 @@ import LandingPage from './src/components/LandingPage/LandingPage'; // Corrected
 
 // Create the native stack
 const Stack = createNativeStackNavigator();
+// Components
+// If folder is `components` and file is `Header.js`
+import Header from './src/components/Header/Header';
+ // Header import
+
+
 
 export default function App() {
   return (
@@ -24,24 +30,34 @@ export default function App() {
       <SafeAreaProvider>
         <NavigationContainer>
           <Stack.Navigator
-            initialRouteName="Landing" // Start with the landing page
-            screenOptions={{
-              headerShown: false, // Hide header for landing page
-            }}
-          >
-            {/* Landing page screen */}
-            <Stack.Screen name="Landing" component={LandingPage} />
-            
-            {/* Home screen */}
-            <Stack.Screen
-              name="Home"
-              component={HomeScreen}
-              options={{ 
-                title: 'TukTuk My Noodles',
-                headerShown: true, // Show header for HomeScreen
-              }}
-            />
-          </Stack.Navigator>
+  initialRouteName="Landing"
+  screenOptions={{
+    // By default, use the custom Header for all screens
+    header: () => <Header />,
+  }}
+>
+  {/* Landing page: hide the header */}
+  <Stack.Screen
+    name="Landing"
+    component={LandingPage}
+    options={{
+      headerShown: false, // Keep Landing page full-screen
+    }}
+  />
+
+  {/* Home screen: custom header will show automatically */}
+  <Stack.Screen
+    name="Home"
+    component={HomeScreen}
+  />
+
+  {/* Cart screen: custom header will show automatically */}
+  {/* <Stack.Screen
+    name="Cart"
+    component={CartScreen}
+  /> */}
+</Stack.Navigator>
+
         </NavigationContainer>
       </SafeAreaProvider>
     </GestureHandlerRootView>
