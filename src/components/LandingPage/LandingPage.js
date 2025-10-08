@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Animated, StyleSheet, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import LinearGradient from 'react-native-linear-gradient';
-import tukTukLogo from './tuktuk-logo.png'; // Replace with your logo path
+import { LinearGradient } from 'expo-linear-gradient';
+import tukTukLogo from '../../../assets/tuktuk-logo.png';
 
 const LandingPage = () => {
   const navigation = useNavigation(); // Hook to navigate between screens
@@ -85,6 +85,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 200,
     height: 200,
+    borderRadius: 60,
     marginBottom: 20, // Space between logo and title
   },
   title: {
