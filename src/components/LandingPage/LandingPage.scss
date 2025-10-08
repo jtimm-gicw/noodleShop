@@ -1,0 +1,31 @@
+// LandingPage.scss
+.landing-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh; // full screen
+  text-align: center;
+
+  // Radial gradient: light green center to dark green edges
+  background: radial-gradient(circle, #a8e6a3 0%, #2c6f2d 100%);
+}
+
+.logo {
+  width: 200px; // adjust as needed
+  animation: spin 5s linear infinite; // spinning animation
+  margin-bottom: 20px; // space between logo and text
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.app-title {
+  font-size: 3rem; // bigger fun typography
+  font-family: 'Comic Sans MS', 'Arial', sans-serif; // fun style font
+  color: #ffd700; // bright yellow
+  text-shadow: 2px 2px 4px black; // bold black shadow for contrast
+  margin: 0;
+}

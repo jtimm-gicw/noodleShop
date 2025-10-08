@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 // import DishCard from '../components/DishCard';
 // import dishes from '../data/dishes';
 import DishCard from '../components/DishCard';
-import dishes from './data/dishes';
+import dishes from '../data/dishes';
 /**
  * HomeScreen
  * Shows a list of noodle dishes with images, name and price.

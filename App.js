@@ -16,6 +16,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 // Screens
 import HomeScreen from './src/screens/HomeScreen';
+import LandingPage from './components/LandingPage/LandingPage'; // landing page
 
 // Create the native stack
 const Stack = createNativeStackNavigator();
