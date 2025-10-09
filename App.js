@@ -11,18 +11,18 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 // Gesture handler
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+// ---------------------------
+// Components & Screens
+// ---------------------------
+import Header from './src/components/Header/Header';
+
 // Screens
 import HomeScreen from './src/screens/HomeScreen';
 import LandingPage from './src/components/LandingPage/LandingPage'; // Corrected import path
+import DishDetailScreen from './src/screens/DishDetailScreen';
 
 // Create the native stack
 const Stack = createNativeStackNavigator();
-// Components
-// If folder is `components` and file is `Header.js`
-import Header from './src/components/Header/Header';
- // Header import
-
-
 
 export default function App() {
   return (
@@ -30,34 +30,36 @@ export default function App() {
       <SafeAreaProvider>
         <NavigationContainer>
           <Stack.Navigator
-  initialRouteName="Landing"
-  screenOptions={{
-    // By default, use the custom Header for all screens
-    header: () => <Header />,
-  }}
->
-  {/* Landing page: hide the header */}
-  <Stack.Screen
-    name="Landing"
-    component={LandingPage}
-    options={{
-      headerShown: false, // Keep Landing page full-screen
-    }}
-  />
+            initialRouteName="Landing" // Start with the landing page
+            screenOptions={{
+              header: () => <Header />,       // uses your custom header on all screens 
+              headerStyle: { height: 80 },    // Ensures header space is allocated
+            }}
+          >
+            {/* Landing page screen */}
+            <Stack.Screen 
+              name="Landing" 
+              component={LandingPage} 
+              options={{ headerShown: false }} // ✅ Keep this so Landing is full-screen
+            />
+            
+            {/* Home screen */}
+            <Stack.Screen
+              name="Home"
+              component={HomeScreen}
+              options={{ 
+                title: 'TukTuk My Noodles',
+                headerShown: true, // Show header for HomeScreen
+              }}
+            />
 
-  {/* Home screen: custom header will show automatically */}
-  <Stack.Screen
-    name="Home"
-    component={HomeScreen}
-  />
+            {/* Dish Detail Screen */}
+            <Stack.Screen 
+              name="DishDetail" 
+              component={DishDetailScreen} 
+            />
 
-  {/* Cart screen: custom header will show automatically */}
-  {/* <Stack.Screen
-    name="Cart"
-    component={CartScreen}
-  /> */}
-</Stack.Navigator>
-
+          </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaProvider>
     </GestureHandlerRootView>

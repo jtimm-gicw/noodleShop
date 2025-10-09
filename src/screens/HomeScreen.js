@@ -2,11 +2,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-// import DishCard from '../components/DishCard';
-// import dishes from '../data/dishes';
+import Header from '../components/Header/Header';
 import DishCard from '../components/DishCard';
 import dishes from '../data/dishes';
-
+import { TouchableOpacity } from 'react-native'; // this import makes cards touchable
 
 /**
  * HomeScreen
@@ -15,17 +14,16 @@ import dishes from '../data/dishes';
 export default function HomeScreen({ navigation }) {
   // Render each dish as a DishCard. Later you can navigate to a detail screen by using navigation.
   const renderItem = ({ item }) => (
-    <DishCard
-      dish={item}
-      onPress={() => {
-        // OPTIONAL: navigate to "DishDetail" when ready
-        // navigation.navigate('DishDetail', { dish: item });
-        // For now we'll just log so behavior exists.
-        console.log('Pressed', item.name);
-      }}
-    />
-  );
-
+  <TouchableOpacity
+    activeOpacity={0.7} // ✅ added subtle fade effect when tapped
+    onPress={() => {
+      // Navigate to DishDetail screen, passing the clicked dish
+      navigation.navigate('DishDetail', item);
+    }}
+  >
+    <DishCard dish={item} />
+  </TouchableOpacity>
+);
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
