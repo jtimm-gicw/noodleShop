@@ -21,46 +21,70 @@ import HomeScreen from './src/screens/HomeScreen';
 import LandingPage from './src/components/LandingPage/LandingPage'; // Corrected import path
 import DishDetailScreen from './src/screens/DishDetailScreen';
 
+// --- NEW: Cart imports ---
+import CartScreen from './src/screens/CartScreen';
+import { CartProvider } from './src/context/CartContext';
+// ---------------------------
+
 // Create the native stack
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
+    // Gesture handler root for react-native-gesture-handler
     <GestureHandlerRootView style={{ flex: 1 }}>
+      {/* Provide safe-area context */}
       <SafeAreaProvider>
-        <NavigationContainer>
-          <Stack.Navigator
-            initialRouteName="Landing" // Start with the landing page
-            screenOptions={{
-              header: () => <Header />,       // uses your custom header on all screens 
-              headerStyle: { height: 80 },    // Ensures header space is allocated
-            }}
-          >
-            {/* Landing page screen */}
-            <Stack.Screen 
-              name="Landing" 
-              component={LandingPage} 
-              options={{ headerShown: false }} // ✅ Keep this so Landing is full-screen
-            />
-            
-            {/* Home screen */}
-            <Stack.Screen
-              name="Home"
-              component={HomeScreen}
-              options={{ 
-                title: 'TukTuk My Noodles',
-                headerShown: true, // Show header for HomeScreen
+
+        {/* --- NEW: Provide cart context to entire app --- */}
+        <CartProvider>
+
+          <NavigationContainer>
+            <Stack.Navigator
+              initialRouteName="Landing" // Start with the landing page
+              screenOptions={{
+                header: () => <Header />,       // uses your custom header on all screens 
+                headerStyle: { height: 80 },    // Ensures header space is allocated
               }}
-            />
+            >
+              {/* Landing page screen */}
+              <Stack.Screen 
+                name="Landing" 
+                component={LandingPage} 
+                options={{ headerShown: false }} // ✅ Keep this so Landing is full-screen
+              />
+              
+              {/* Home screen */}
+              <Stack.Screen
+                name="Home"
+                component={HomeScreen}
+                options={{ 
+                  title: 'TukTuk My Noodles',
+                  headerShown: true, // Show header for HomeScreen
+                }}
+              />
 
-            {/* Dish Detail Screen */}
-            <Stack.Screen 
-              name="DishDetail" 
-              component={DishDetailScreen} 
-            />
+              {/* Dish Detail Screen */}
+              <Stack.Screen 
+                name="DishDetail" 
+                component={DishDetailScreen} 
+              />
 
-          </Stack.Navigator>
-        </NavigationContainer>
+              {/* --- NEW: Cart screen route --- */}
+              <Stack.Screen
+                name="Cart"
+                component={CartScreen}
+                options={{
+                  title: 'Your Cart',
+                  headerShown: true,
+                }}
+              />
+
+            </Stack.Navigator>
+          </NavigationContainer>
+
+        </CartProvider>
+
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

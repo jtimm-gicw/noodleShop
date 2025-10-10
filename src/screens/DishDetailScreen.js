@@ -1,11 +1,18 @@
-import React from 'react';
+// src/screens/DishDetailScreen.jsx
+import React, { useContext } from 'react'; // <-- added useContext
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+
+// <-- added import: use the same path you used before when creating CartContext
+import { CartContext } from '../context/CartContext';
 
 export default function DishDetailScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const dish = route.params;
+
+  // Get addItem from CartContext so we can add dishes to the cart
+  const { addItem } = useContext(CartContext);
 
   if (!dish) return null;
 
@@ -27,21 +34,41 @@ export default function DishDetailScreen() {
 
       {/* ✅ Added: Button section for Home + Add to Cart */}
       <View style={styles.buttonContainer}>
-        
-        {/* ✅ Added: Home button (glowing neon green) */}
+
+        {/* ✅ Home button (unchanged) */}
         <TouchableOpacity
           style={styles.homeButton}
-          onPress={() => navigation.navigate('Home')} // Navigates back to HomeScreen
+          onPress={() => navigation.navigate('Home')}
         >
           <Text style={styles.buttonText}>🏠 Home</Text>
         </TouchableOpacity>
 
-        {/* ✅ Added: Add to Cart button (glowing neon blue) */}
+        {/* ✅ Add to Cart button: now calls addItem */}
         <TouchableOpacity
           style={styles.cartButton}
           onPress={() => {
             console.log('Add to Cart pressed for:', dish?.name);
-            // ✅ Future: This will add the dish to the cart once CartScreen is created
+
+            // --- ADDED: call addItem from CartContext to add this dish to the cart ---
+            // Pass an object with at least id, name, price, image so CartContext can store it.
+            // Use qty = 1 for a single add.
+            try {
+              addItem(
+                {
+                  id: dish.id,           // make sure dish.id exists and is unique
+                  name: dish.name,
+                  price: Number(dish.price) || 0,
+                  image: dish.image,
+                },
+                1 // quantity
+              );
+              console.log('DEBUG: addItem called for:', dish.name);
+
+              // optional: navigate to Cart so user sees the item immediately
+              navigation.navigate('Cart');
+            } catch (err) {
+              console.warn('Failed to add to cart:', err);
+            }
           }}
         >
           <Text style={styles.buttonText}>🛒 Add to Cart</Text>
@@ -52,11 +79,11 @@ export default function DishDetailScreen() {
   );
 }
 
-// --- STYLES ---
+// --- STYLES --- (unchanged)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAF8E1', // same background as HomeScreen for consistency
+    backgroundColor: '#FAF8E1',
     alignItems: 'center',
     justifyContent: 'flex-start',
     padding: 16,
@@ -70,7 +97,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#FF0000', // bright red matches app’s neon theme
+    color: '#FF0000',
     marginTop: 16,
     textAlign: 'center',
   },
@@ -87,17 +114,13 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     paddingHorizontal: 10,
   },
-
-  /* ✅ Added: Button styling section */
   buttonContainer: {
     flexDirection: 'row',
     marginTop: 30,
-    gap: 16, // space between buttons
+    gap: 16,
   },
-
-  // ✅ Home button: Neon green glow
   homeButton: {
-    backgroundColor: '#00FF66', // neon green
+    backgroundColor: '#00FF66',
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 8,
@@ -105,12 +128,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.9,
     shadowRadius: 10,
-    elevation: 6, // Android glow
+    elevation: 6,
   },
-
-  // ✅ Add to Cart button: Neon blue glow
   cartButton: {
-    backgroundColor: '#00CCFF', // neon blue
+    backgroundColor: '#00CCFF',
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 8,
@@ -120,8 +141,6 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 6,
   },
-
-  // ✅ Shared button text style
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
