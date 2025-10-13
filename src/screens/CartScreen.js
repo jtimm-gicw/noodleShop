@@ -1,12 +1,13 @@
 // src/screens/CartScreen.jsx
 import React, { useContext } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
-import { CartContext } from '../context/CartContext'; // access shared cart data and functions
+import { useNavigation } from '@react-navigation/native';
+import { CartContext } from '../context/CartContext';
+import { Ionicons } from '@expo/vector-icons';
 
-// 🧩 Small component for each item in the cart
+// Small component for each item in the cart
 const CartItem = ({ item, increment, decrement, remove }) => (
   <View style={styles.itemRow}>
-    {/* Show product image if available */}
     {item.image ? (
       <Image
         source={typeof item.image === 'string' ? { uri: item.image } : item.image}
@@ -14,14 +15,12 @@ const CartItem = ({ item, increment, decrement, remove }) => (
       />
     ) : null}
 
-    {/* Item details: name, price, quantity controls */}
     <View style={{ flex: 1, paddingHorizontal: 8 }}>
       <Text style={styles.itemName}>{item.name}</Text>
       <Text style={styles.itemPrice}>
         ${(item.price * item.qty).toFixed(2)} • {item.qty} x ${item.price.toFixed(2)}
       </Text>
 
-      {/* Quantity buttons and remove button */}
       <View style={styles.qtyRow}>
         <TouchableOpacity onPress={() => decrement(item.id)} style={styles.qtyBtn}>
           <Text style={styles.qtyBtnText}>-</Text>
@@ -41,29 +40,36 @@ const CartItem = ({ item, increment, decrement, remove }) => (
   </View>
 );
 
-// 🛒 Main Cart screen component
-const CartScreen = ({ navigation }) => {
-  // Get cart items and functions from context
+const CartScreen = () => {
+  const navigation = useNavigation();
   const { cart, increment, decrement, removeItem, clearCart, subTotal } = useContext(CartContext);
 
-  // Placeholder for checkout button
   const handleCheckout = () => {
     Alert.alert('Checkout', 'This is a placeholder for your checkout flow.');
   };
 
+  // Footer component for FlatList: Go back to Home
+  const renderFooter = () => (
+    <View style={styles.homeLinkContainer}>
+      <TouchableOpacity
+        // ✅ Fix: navigate to nested HomeTab inside MainTabs
+        onPress={() => navigation.navigate('Main', { screen: 'HomeTab' })}
+        style={styles.homeButton}
+      >
+        <Text style={styles.homeButtonText}>🏠 Go back to Home</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
-      {/* If cart is empty, show a message */}
       {cart.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>Your cart is empty.</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Home')}>
-            <Text style={styles.backToHome}>Go back to Home</Text>
-          </TouchableOpacity>
+          {renderFooter()}
         </View>
       ) : (
         <>
-          {/* List of cart items */}
           <FlatList
             data={cart}
             keyExtractor={(i) => i.id.toString()}
@@ -72,13 +78,14 @@ const CartScreen = ({ navigation }) => {
                 item={item}
                 increment={increment}
                 decrement={decrement}
-                remove={(id) => removeItem(id)}
+                remove={removeItem}
               />
             )}
             contentContainerStyle={{ paddingBottom: 100 }}
+            ListFooterComponent={renderFooter}
           />
 
-          {/* Bottom section: subtotal, clear & checkout buttons */}
+          {/* Footer with subtotal, clear & checkout buttons */}
           <View style={styles.footer}>
             <View>
               <Text style={styles.subtotalLabel}>Subtotal</Text>
@@ -101,21 +108,17 @@ const CartScreen = ({ navigation }) => {
   );
 };
 
-// 🎨 Styles for the Cart screen (dark theme)
+// --- Styles ---
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1A1A1A', // dark background for contrast
-    padding: 16,
-  },
+  container: { flex: 1, backgroundColor: '#1A1A1A', padding: 16 },
   itemRow: {
     flexDirection: 'row',
     marginBottom: 12,
-    backgroundColor: '#2A2A2A', // lighter gray box for each item
+    backgroundColor: '#2A2A2A',
     padding: 10,
     borderRadius: 8,
     alignItems: 'center',
-    shadowColor: '#00FFFF', // subtle neon glow
+    shadowColor: '#00FFFF',
     shadowOpacity: 0.2,
     shadowRadius: 6,
   },
@@ -123,32 +126,31 @@ const styles = StyleSheet.create({
   itemName: { fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
   itemPrice: { color: '#CCCCCC', marginTop: 4 },
   qtyRow: { flexDirection: 'row', marginTop: 8, alignItems: 'center' },
-
-  // Buttons for +/- quantity
-  qtyBtn: {
-    backgroundColor: '#00FFFF', // neon blue
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
+  qtyBtn: { backgroundColor: '#00FFFF', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
   qtyBtnText: { color: '#000', fontWeight: '700', fontSize: 16 },
   qtyText: { color: '#FFFFFF', marginHorizontal: 8 },
-
-  // Remove button for an item
-  removeBtn: {
-    backgroundColor: '#FF1744', // red delete button
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 6,
-    marginLeft: 12,
-  },
-
-  // Empty cart message styles
+  removeBtn: { backgroundColor: '#FF1744', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6, marginLeft: 12 },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyText: { color: '#FFFFFF', fontSize: 18 },
-  backToHome: { color: '#39FF14', marginTop: 12, fontWeight: 'bold' },
 
-  // Bottom subtotal section
+  // Home button under last item
+  homeLinkContainer: { alignItems: 'center', marginVertical: 20 },
+  homeButton: {
+    backgroundColor: '#FF8C00', // bright orange
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    shadowColor: '#FFA500',
+    shadowOpacity: 0.8,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  homeButtonText: {
+    color: '#000',
+    fontWeight: '700',
+    fontSize: 16,
+  },
+
   footer: {
     position: 'absolute',
     bottom: 16,
@@ -163,28 +165,9 @@ const styles = StyleSheet.create({
   },
   subtotalLabel: { color: '#BBBBBB', fontSize: 16 },
   subtotalText: { color: '#FFFFFF', fontSize: 18, fontWeight: '700' },
-
   footerButtons: { flexDirection: 'row' },
-
-  // Clear cart button
-  clearBtn: {
-    backgroundColor: '#FF1744',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginRight: 8,
-  },
-
-  // Checkout button
-  checkoutBtn: {
-    backgroundColor: '#39FF14', // neon green
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 8,
-    shadowColor: '#39FF14', // subtle neon glow
-    shadowOpacity: 0.6,
-    shadowRadius: 10,
-  },
+  clearBtn: { backgroundColor: '#FF1744', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 8, marginRight: 8 },
+  checkoutBtn: { backgroundColor: '#39FF14', paddingHorizontal: 18, paddingVertical: 10, borderRadius: 8, shadowColor: '#39FF14', shadowOpacity: 0.6, shadowRadius: 10 },
   btnText: { color: '#000', fontWeight: '700' },
 });
 
