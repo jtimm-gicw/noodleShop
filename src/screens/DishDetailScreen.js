@@ -1,9 +1,9 @@
 // src/screens/DishDetailScreen.jsx
-import React, { useContext } from 'react'; // <-- added useContext
+import React, { useContext } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
-// <-- added import: use the same path you used before when creating CartContext
+// ✅ Use CartContext to access cart functions
 import { CartContext } from '../context/CartContext';
 
 export default function DishDetailScreen() {
@@ -11,9 +11,10 @@ export default function DishDetailScreen() {
   const route = useRoute();
   const dish = route.params;
 
-  // Get addItem from CartContext so we can add dishes to the cart
+  // Get addItem function from CartContext
   const { addItem } = useContext(CartContext);
 
+  // If dish not passed, render nothing
   if (!dish) return null;
 
   return (
@@ -29,33 +30,32 @@ export default function DishDetailScreen() {
 
       {/* --- Dish description --- */}
       <Text style={styles.description}>
-        A delicious Thai noodle dish made fresh with authentic ingredients. Enjoy bold flavors and vibrant colors in every bite!
+        A delicious Thai noodle dish made fresh with authentic ingredients.
+        Enjoy bold flavors and vibrant colors in every bite!
       </Text>
 
-      {/* ✅ Added: Button section for Home + Add to Cart */}
+      {/* --- Button container --- */}
       <View style={styles.buttonContainer}>
-
-        {/* ✅ Home button (unchanged) */}
+        {/* ✅ Home button */}
         <TouchableOpacity
           style={styles.homeButton}
-          onPress={() => navigation.navigate('Home')}
+          onPress={() => {
+            // Navigate to Home tab inside MainTabs
+            navigation.navigate('Main', { screen: 'HomeTab' });
+          }}
         >
           <Text style={styles.buttonText}>🏠 Home</Text>
         </TouchableOpacity>
 
-        {/* ✅ Add to Cart button: now calls addItem */}
+        {/* ✅ Add to Cart button */}
         <TouchableOpacity
           style={styles.cartButton}
           onPress={() => {
-            console.log('Add to Cart pressed for:', dish?.name);
-
-            // --- ADDED: call addItem from CartContext to add this dish to the cart ---
-            // Pass an object with at least id, name, price, image so CartContext can store it.
-            // Use qty = 1 for a single add.
             try {
+              // Add this dish to cart
               addItem(
                 {
-                  id: dish.id,           // make sure dish.id exists and is unique
+                  id: dish.id,
                   name: dish.name,
                   price: Number(dish.price) || 0,
                   image: dish.image,
@@ -64,8 +64,8 @@ export default function DishDetailScreen() {
               );
               console.log('DEBUG: addItem called for:', dish.name);
 
-              // optional: navigate to Cart so user sees the item immediately
-              navigation.navigate('Cart');
+              // Optional: navigate to Cart tab
+              navigation.navigate('Main', { screen: 'CartTab' });
             } catch (err) {
               console.warn('Failed to add to cart:', err);
             }
@@ -74,12 +74,11 @@ export default function DishDetailScreen() {
           <Text style={styles.buttonText}>🛒 Add to Cart</Text>
         </TouchableOpacity>
       </View>
-      {/* ✅ End of added buttons */}
     </View>
   );
 }
 
-// --- STYLES --- (unchanged)
+// --- Styles ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,

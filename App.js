@@ -1,90 +1,119 @@
+// App.js
 import React from 'react';
-import { Platform, View, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 // Navigation
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons'; // ✅ Needed for tab icons
 
-// Safe area
+// Safe area & gesture handler
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-
-// Gesture handler
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-// ---------------------------
-// Components & Screens
-// ---------------------------
+// Components & screens
 import Header from './src/components/Header/Header';
-
-// Screens
+import LandingPage from './src/components/LandingPage/LandingPage';
 import HomeScreen from './src/screens/HomeScreen';
-import LandingPage from './src/components/LandingPage/LandingPage'; // Corrected import path
 import DishDetailScreen from './src/screens/DishDetailScreen';
-
-// --- NEW: Cart imports ---
 import CartScreen from './src/screens/CartScreen';
+
+// Context
 import { CartProvider } from './src/context/CartContext';
-// ---------------------------
 
-// Create the native stack
+// Stack & Tab creators
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
+// ---------------------------
+// MainTabs with icons
+// ---------------------------
+function MainTabs() {
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        header: () => <Header />,            // ✅ Custom header for tabs
+        headerStyle: { height: 80 },
+        tabBarStyle: { backgroundColor: '#1A1A1A' },
+        tabBarActiveTintColor: '#FFA500',
+        tabBarInactiveTintColor: '#888',
+        tabBarLabelStyle: { fontSize: 14, fontWeight: '700' },
+      }}
+    >
+      {/* Home Tab */}
+      <Tab.Screen
+        name="HomeTab"
+        component={HomeScreen}
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home-outline" color={color} size={size} />
+          ),
+        }}
+      />
+
+      {/* Cart Tab */}
+      <Tab.Screen
+        name="CartTab"
+        component={CartScreen}
+        options={{
+          title: 'Cart',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="cart-outline" color={color} size={size} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+}
+
+// ---------------------------
+// App Component
+// ---------------------------
 export default function App() {
   return (
-    // Gesture handler root for react-native-gesture-handler
     <GestureHandlerRootView style={{ flex: 1 }}>
-      {/* Provide safe-area context */}
       <SafeAreaProvider>
-
-        {/* --- NEW: Provide cart context to entire app --- */}
         <CartProvider>
-
           <NavigationContainer>
             <Stack.Navigator
-              initialRouteName="Landing" // Start with the landing page
+              initialRouteName="Landing"
               screenOptions={{
-                header: () => <Header />,       // uses your custom header on all screens 
-                headerStyle: { height: 80 },    // Ensures header space is allocated
+                header: () => <Header />,   // Default header for stack screens
+                headerStyle: { height: 80 },
               }}
             >
-              {/* Landing page screen */}
-              <Stack.Screen 
-                name="Landing" 
-                component={LandingPage} 
-                options={{ headerShown: false }} // ✅ Keep this so Landing is full-screen
-              />
-              
-              {/* Home screen */}
+              {/* Landing full-screen */}
               <Stack.Screen
-                name="Home"
-                component={HomeScreen}
-                options={{ 
-                  title: 'TukTuk My Noodles',
-                  headerShown: true, // Show header for HomeScreen
-                }}
+                name="Landing"
+                component={LandingPage}
+                options={{ headerShown: false }}
               />
 
-              {/* Dish Detail Screen */}
-              <Stack.Screen 
-                name="DishDetail" 
-                component={DishDetailScreen} 
+              {/* MainTabs (Home + Cart) */}
+              <Stack.Screen
+                name="Main"
+                component={MainTabs}
+                options={{ headerShown: false }} // Important to hide stack header
               />
 
-              {/* --- NEW: Cart screen route --- */}
+              {/* Dish details pushed on top */}
+              <Stack.Screen
+                name="DishDetail"
+                component={DishDetailScreen}
+                options={{ title: 'Dish Details' }}
+              />
+
+              {/* Optional: Cart screen push */}
               <Stack.Screen
                 name="Cart"
                 component={CartScreen}
-                options={{
-                  title: 'Your Cart',
-                  headerShown: true,
-                }}
+                options={{ title: 'Your Cart' }}
               />
-
             </Stack.Navigator>
           </NavigationContainer>
-
         </CartProvider>
-
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
