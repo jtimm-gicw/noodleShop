@@ -1,7 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, Alert, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, Button, Alert, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { ProfileContext } from '../context/ProfileContext';
-
 
 /*
   SettingsScreen
@@ -30,6 +29,15 @@ export default function SettingsScreen() {
   const [cardNumber, setCardNumber] = useState(''); // raw while editing (do not persist raw)
   const [cardMasked, setCardMasked] = useState(profile.cardNumberMasked || '');
   const [cardExpiry, setCardExpiry] = useState(profile.cardExpiry || '');
+
+  // ---------- MINIMAL ADDITION: simulated demo cards ----------
+  // This is the only new piece: sample (fake) cards for demo purposes.
+  // They are NOT used for real payments and are clearly marked as demo.
+  const [savedCards] = useState([
+    { id: 'demo-1', type: 'Visa', numberMasked: '**** **** **** 4242', holder: profile.name || 'Demo User', expiry: '12/27' },
+    { id: 'demo-2', type: 'MasterCard', numberMasked: '**** **** **** 5588', holder: profile.name || 'Demo User', expiry: '08/28' },
+  ]);
+  // ----------------------------------------------------------
 
   // Sync local form with profile when profile changes externally
   useEffect(() => {
@@ -131,6 +139,37 @@ export default function SettingsScreen() {
       <Text style={styles.note}>
         Note: For production, integrate a payment provider (Stripe, Braintree). Do not store raw card numbers.
       </Text>
+
+      {/* ---------- MINIMAL ADDITION: Render demo saved cards (non-functional) ---------- */}
+      <View style={{ marginTop: 24 }}>
+        <Text style={[styles.label, { marginBottom: 8 }]}>Saved Payment Methods (Demo Only)</Text>
+        {savedCards.map((c) => (
+          <View key={c.id} style={styles.cardDemo}>
+            <Text style={{ fontWeight: '700', marginBottom: 4 }}>{c.type}</Text>
+            <Text>{c.numberMasked}</Text>
+            <Text style={{ color: '#666', marginTop: 4 }}>{c.holder} • Expires {c.expiry}</Text>
+            {/* Optional: a demo "use this" button that populates masked fields (does not store raw) */}
+            <TouchableOpacity
+              style={styles.useButton}
+              onPress={() => {
+                // Populate the masked card fields from the demo card (no raw stored)
+                setCardMasked(c.numberMasked);
+                // Extract last4 from masked (safe demo only)
+                const last4 = c.numberMasked.slice(-4);
+                // Update expiry to match demo card
+                setCardExpiry(c.expiry);
+                Alert.alert('Demo card loaded', 'Demo card details populated in the form (not saved).');
+              }}
+            >
+              <Text style={{ fontWeight: '700' }}>Use (Demo)</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
+        <Text style={{ color: '#888', marginTop: 10 }}>
+          ⚠️ These are simulated cards for demo purposes only. No real payments are processed.
+        </Text>
+      </View>
+      {/* ------------------------------------------------------------------------------------ */}
     </ScrollView>
   );
 }
@@ -140,5 +179,21 @@ const styles = StyleSheet.create({
   label: { fontWeight: '600', marginTop: 12 },
   input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 6, padding: 8, marginTop: 6 },
   info: { marginTop: 8, color: '#444' },
-  note: { marginTop: 12, color: '#aa0000', fontSize: 12 }
+  note: { marginTop: 12, color: '#aa0000', fontSize: 12 },
+
+  /* styles for demo cards */
+  cardDemo: {
+    backgroundColor: '#f3f3f3',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  useButton: {
+    marginTop: 8,
+    backgroundColor: '#eee',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
 });
