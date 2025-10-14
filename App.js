@@ -6,7 +6,7 @@ import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons'; // ✅ Needed for tab icons
+import { Ionicons } from '@expo/vector-icons';
 
 // Safe area & gesture handler
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -22,7 +22,7 @@ import SettingsScreen from './src/screens/SettingsScreen';
 
 // Context
 import { CartProvider } from './src/context/CartContext';
-import { ProfileProvider } from './src/context/ProfileContext'; // ✅ Added
+import { ProfileProvider } from './src/context/ProfileContext'; // ✅ Fixed import
 
 // Stack & Tab creators
 const Stack = createNativeStackNavigator();
@@ -78,7 +78,7 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        {/* ✅ Wrap ProfileProvider outside so all screens can access it */}
+        {/* ✅ Wrap ProfileProvider so all screens can access it */}
         <ProfileProvider>
           <CartProvider>
             <NavigationContainer>
