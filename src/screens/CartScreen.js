@@ -1,9 +1,12 @@
 // src/screens/CartScreen.jsx
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react'; // ✅ Added useState
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CartContext } from '../context/CartContext';
 import { Ionicons } from '@expo/vector-icons';
+
+import CheckoutModal from '../components/CheckoutModal';
+
 
 // Small component for each item in the cart
 const CartItem = ({ item, increment, decrement, remove }) => (
@@ -44,15 +47,16 @@ const CartScreen = () => {
   const navigation = useNavigation();
   const { cart, increment, decrement, removeItem, clearCart, subTotal } = useContext(CartContext);
 
-  const handleCheckout = () => {
-    Alert.alert('Checkout', 'This is a placeholder for your checkout flow.');
-  };
+
+  const [modalVisible, setModalVisible] = useState(false); // ✅ Hook moved inside component
+
+  // ✅ Updated checkout handler to open modal
+  const handleCheckout = () => setModalVisible(true);
 
   // Footer component for FlatList: Go back to Home
   const renderFooter = () => (
     <View style={styles.homeLinkContainer}>
       <TouchableOpacity
-        // ✅ Fix: navigate to nested HomeTab inside MainTabs
         onPress={() => navigation.navigate('Main', { screen: 'HomeTab' })}
         style={styles.homeButton}
       >
@@ -102,11 +106,25 @@ const CartScreen = () => {
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* ✅ Checkout modal */}
+          <CheckoutModal
+            visible={modalVisible}
+            onClose={() => setModalVisible(false)}
+            orderItems={cart}
+            onConfirm={() => {
+              clearCart(true);
+              setModalVisible(false);
+              Alert.alert('Success', 'Order placed! (mock)');
+            }}
+          />
         </>
       )}
     </View>
   );
 };
+
+// --- Styles remain unchanged ---
 
 // --- Styles ---
 const styles = StyleSheet.create({

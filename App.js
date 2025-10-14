@@ -18,22 +18,21 @@ import LandingPage from './src/components/LandingPage/LandingPage';
 import HomeScreen from './src/screens/HomeScreen';
 import DishDetailScreen from './src/screens/DishDetailScreen';
 import CartScreen from './src/screens/CartScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
 
 // Context
 import { CartProvider } from './src/context/CartContext';
+import { ProfileProvider } from './src/context/ProfileContext'; // ✅ Added
 
 // Stack & Tab creators
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// ---------------------------
-// MainTabs with icons
-// ---------------------------
 function MainTabs() {
   return (
     <Tab.Navigator
       screenOptions={{
-        header: () => <Header />,            // ✅ Custom header for tabs
+        header: () => <Header />,
         headerStyle: { height: 80 },
         tabBarStyle: { backgroundColor: '#1A1A1A' },
         tabBarActiveTintColor: '#FFA500',
@@ -41,7 +40,6 @@ function MainTabs() {
         tabBarLabelStyle: { fontSize: 14, fontWeight: '700' },
       }}
     >
-      {/* Home Tab */}
       <Tab.Screen
         name="HomeTab"
         component={HomeScreen}
@@ -52,8 +50,6 @@ function MainTabs() {
           ),
         }}
       />
-
-      {/* Cart Tab */}
       <Tab.Screen
         name="CartTab"
         component={CartScreen}
@@ -64,56 +60,59 @@ function MainTabs() {
           ),
         }}
       />
+      <Tab.Screen
+        name="SettingsTab"
+        component={SettingsScreen}
+        options={{
+          tabBarLabel: 'Settings',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="settings-outline" color={color} size={size} />
+          ),
+        }}
+      />
     </Tab.Navigator>
   );
 }
 
-// ---------------------------
-// App Component
-// ---------------------------
 export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <CartProvider>
-          <NavigationContainer>
-            <Stack.Navigator
-              initialRouteName="Landing"
-              screenOptions={{
-                header: () => <Header />,   // Default header for stack screens
-                headerStyle: { height: 80 },
-              }}
-            >
-              {/* Landing full-screen */}
-              <Stack.Screen
-                name="Landing"
-                component={LandingPage}
-                options={{ headerShown: false }}
-              />
-
-              {/* MainTabs (Home + Cart) */}
-              <Stack.Screen
-                name="Main"
-                component={MainTabs}
-                options={{ headerShown: false }} // Important to hide stack header
-              />
-
-              {/* Dish details pushed on top */}
-              <Stack.Screen
-                name="DishDetail"
-                component={DishDetailScreen}
-                options={{ title: 'Dish Details' }}
-              />
-
-              {/* Optional: Cart screen push */}
-              <Stack.Screen
-                name="Cart"
-                component={CartScreen}
-                options={{ title: 'Your Cart' }}
-              />
-            </Stack.Navigator>
-          </NavigationContainer>
-        </CartProvider>
+        {/* ✅ Wrap ProfileProvider outside so all screens can access it */}
+        <ProfileProvider>
+          <CartProvider>
+            <NavigationContainer>
+              <Stack.Navigator
+                initialRouteName="Landing"
+                screenOptions={{
+                  header: () => <Header />,
+                  headerStyle: { height: 80 },
+                }}
+              >
+                <Stack.Screen
+                  name="Landing"
+                  component={LandingPage}
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="Main"
+                  component={MainTabs}
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="DishDetail"
+                  component={DishDetailScreen}
+                  options={{ title: 'Dish Details' }}
+                />
+                <Stack.Screen
+                  name="Cart"
+                  component={CartScreen}
+                  options={{ title: 'Your Cart' }}
+                />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </CartProvider>
+        </ProfileProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
