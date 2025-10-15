@@ -1,51 +1,39 @@
 // src/screens/HomeScreen.js
 import React, { useContext } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../components/Header/Header';
 import DishCard from '../components/DishCard';
 import dishes from '../data/dishes';
 import { DarkModeContext } from '../context/DarkModeContext'; // ✅ ADDED: import dark mode context
 
-/**
- * HomeScreen
- * Shows a list of noodle dishes with images, name and price.
- * 
- * CHANGED:
- * - SafeAreaView now covers top notch/status bar seamlessly using edges prop
- * - All other logic, styles, and comments remain intact
- */
 export default function HomeScreen({ navigation }) {
-  const darkCtx = useContext(DarkModeContext) || {}; // ✅ ADDED: read dark mode context
-  const darkMode = darkCtx.darkMode ?? darkCtx.isDarkMode ?? false; // ✅ ADDED: support both naming options
+  const darkCtx = useContext(DarkModeContext) || {};
+  const darkMode = darkCtx.darkMode ?? darkCtx.isDarkMode ?? false;
 
-  // Render each dish as a DishCard. Later you can navigate to a detail screen by using navigation.
+  // Render each dish as a DishCard
   const renderItem = ({ item }) => (
     <TouchableOpacity
-      activeOpacity={0.7} // ✅ added subtle fade effect when tapped
-      onPress={() => {
-        // Navigate to DishDetail screen, passing the clicked dish
-        navigation.navigate('DishDetail', item);
-      }}
+      activeOpacity={0.7} // subtle fade effect when tapped
+      onPress={() => navigation.navigate('DishDetail', item)}
     >
       <DishCard dish={item} />
     </TouchableOpacity>
   );
 
-  // ✅ ADDED: dynamic styles for dark mode while keeping all existing styling
+  // Dynamic styles for dark mode
   const dynamicStyles = {
     container: {
       flex: 1,
-      backgroundColor: darkMode ? '#1a1a1a' : '#FAF8E1', // dark gray background in dark mode
+      backgroundColor: darkMode ? '#1a1a1a' : '#FAF8E1', // dark gray in dark mode
     },
     title: {
       fontSize: 28,
-      fontWeight: '900', // bold for readability
-      color: darkMode ? '#FFD700' : '#FF0000', // neon yellow in dark mode, bright red in light mode
-      textShadowColor: darkMode ? '#006400' : '#8B0000', // dark green glow in dark mode, dark red in light
+      fontWeight: '900',
+      color: darkMode ? '#ea00ffff' : '#FF0000',
+      textShadowColor: darkMode ? '#de6fb9ff' : '#8B0000',
       textShadowOffset: { width: 0, height: 0 },
-      textShadowRadius: 10, // creates neon-like glow
-      fontFamily: 'Cochin', // playful, still legible font
+      textShadowRadius: 10,
+      fontFamily: 'Cochin',
       textAlign: 'center',
       paddingHorizontal: 8,
       paddingVertical: 4,
@@ -53,16 +41,16 @@ export default function HomeScreen({ navigation }) {
     subtitle: {
       marginTop: 4,
       fontSize: 11,
-      color: darkMode ? '#ccc' : '#666', // light gray in dark mode
+      color: darkMode ? '#ccc' : '#666',
     },
   };
 
   return (
-    <SafeAreaView style={dynamicStyles.container} edges={['top', 'left', 'right']}>
-      {/* Header component */}
+    <View style={dynamicStyles.container}>
+      {/* Header */}
       <Header />
 
-      {/* Title and subtitle block */}
+      {/* Screen header text */}
       <View style={styles.header}>
         <Text style={dynamicStyles.title}>Sen Khong Rao Aroi Mak</Text>
         <Text style={dynamicStyles.subtitle}>
@@ -70,14 +58,15 @@ export default function HomeScreen({ navigation }) {
         </Text>
       </View>
 
+      {/* Dish list */}
       <FlatList
         data={dishes}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false} // optional
+        showsVerticalScrollIndicator={false}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 

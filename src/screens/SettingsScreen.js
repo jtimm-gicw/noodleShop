@@ -117,6 +117,12 @@ export default function SettingsScreen() {
 
   return (
     <ScrollView contentContainerStyle={dynamicStyles.container}>
+      {/* Dark Mode Toggle */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16 }}>
+        <Text style={[dynamicStyles.label, { marginRight: 8 }]}>Dark Mode</Text>
+        <Switch value={darkMode} onValueChange={onToggleDarkMode} />
+      </View>
+
       {/* Name input */}
       <Text style={dynamicStyles.label}>Full name</Text>
       <TextInput
@@ -176,11 +182,7 @@ export default function SettingsScreen() {
         Stored card: {cardMasked || 'none'}
       </Text>
 
-      {/* Dark Mode Toggle */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16 }}>
-        <Text style={[dynamicStyles.label, { marginRight: 8 }]}>Dark Mode</Text>
-        <Switch value={darkMode} onValueChange={onToggleDarkMode} />
-      </View>
+
 
       {/* Save button */}
       <View style={{ marginTop: 16 }}>

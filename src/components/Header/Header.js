@@ -1,11 +1,12 @@
+// src/components/Header/Header.js
 import React, { useContext } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, StatusBar, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import tukTukLogo from '../../../assets/tuktuk-logo.png';
 import { DarkModeContext } from '../../context/DarkModeContext'; // ✅ import dark mode context
-import { SafeAreaView } from 'react-native-safe-area-context'; 
+
 const Header = () => {
   const navigation = useNavigation();
   const darkCtx = useContext(DarkModeContext) || {};
@@ -15,35 +16,53 @@ const Header = () => {
   const gradientColors = darkMode ? ['#004d00', '#00ff00'] : ['#006400', '#90ee90'];
 
   return (
-    <LinearGradient
-      colors={gradientColors}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 0 }}
-      style={[
-        styles.headerContainer,
-        darkMode && {
-          shadowColor: '#00FF00', // neon green glow
-          shadowOffset: { width: 0, height: 0 },
-          shadowOpacity: 0.5,
-          shadowRadius: 15,
-          elevation: 8,
-        },
-      ]}
-    >
-      {/* Left: logo + title */}
-      <View style={styles.leftContainer}>
-        <Image source={tukTukLogo} style={styles.logo} resizeMode="contain" />
-        <Text style={styles.title}>TukTuk My Noodles</Text>
-      </View>
+    <>
+      {/* StatusBar overlay to allow gradient behind it */}
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle={darkMode ? "light-content" : "dark-content"}
+      />
 
-      {/* Right: clickable cart icon */}
-      <TouchableOpacity
-        style={styles.cartButton}
-        onPress={() => navigation.navigate('Cart')}
+      {/* LinearGradient header */}
+      <LinearGradient
+        colors={gradientColors}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={[
+          styles.headerContainer,
+          {
+            // Make header start from top of screen behind status bar
+            paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 25,
+          },
+          darkMode && {
+            shadowColor: '#00FF00', // neon green glow
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.5,
+            shadowRadius: 15,
+            elevation: 8,
+          },
+        ]}
       >
-        <MaterialIcons name="shopping-cart" size={24} color={darkMode ? '#00FF00' : '#006400'} />
-      </TouchableOpacity>
-    </LinearGradient>
+        {/* Left: logo + title */}
+        <View style={styles.leftContainer}>
+          <Image source={tukTukLogo} style={styles.logo} resizeMode="contain" />
+          <Text style={styles.title}>TukTuk My Noodles</Text>
+        </View>
+
+        {/* Right: clickable cart icon */}
+        <TouchableOpacity
+          style={styles.cartButton}
+          onPress={() => navigation.navigate('Cart')}
+        >
+          <MaterialIcons
+            name="shopping-cart"
+            size={24}
+            color={darkMode ? '#00FF00' : '#006400'}
+          />
+        </TouchableOpacity>
+      </LinearGradient>
+    </>
   );
 };
 
@@ -54,7 +73,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 15,
     paddingVertical: 10,
-    paddingTop: 25, // breathing room
+    // paddingTop removed here, handled dynamically above
   },
   leftContainer: {
     flexDirection: 'row',
