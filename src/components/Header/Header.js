@@ -1,24 +1,34 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-
-// Icon import (keeps you from needing a cart image file)
 import { MaterialIcons } from '@expo/vector-icons';
-
-// CHANGED: assets folder is at project root, so we go up three levels from
-// src/components/Header/Header.js to reach project-root/assets
 import tukTukLogo from '../../../assets/tuktuk-logo.png';
-
+import { DarkModeContext } from '../../context/DarkModeContext'; // ✅ import dark mode context
+import { SafeAreaView } from 'react-native-safe-area-context'; 
 const Header = () => {
   const navigation = useNavigation();
+  const darkCtx = useContext(DarkModeContext) || {};
+  const darkMode = darkCtx.darkMode ?? darkCtx.isDarkMode ?? false;
+
+  // ✅ Set gradient dynamically based on dark mode
+  const gradientColors = darkMode ? ['#004d00', '#00ff00'] : ['#006400', '#90ee90'];
 
   return (
     <LinearGradient
-      colors={['#006400', '#90ee90']} // dark to light green left-to-right
+      colors={gradientColors}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
-      style={styles.headerContainer}
+      style={[
+        styles.headerContainer,
+        darkMode && {
+          shadowColor: '#00FF00', // neon green glow
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0.5,
+          shadowRadius: 15,
+          elevation: 8,
+        },
+      ]}
     >
       {/* Left: logo + title */}
       <View style={styles.leftContainer}>
@@ -28,10 +38,10 @@ const Header = () => {
 
       {/* Right: clickable cart icon */}
       <TouchableOpacity
-        style={styles.cartButton} // CHANGED: new rounded style container
+        style={styles.cartButton}
         onPress={() => navigation.navigate('Cart')}
       >
-        <MaterialIcons name="shopping-cart" size={24} color="#006400" />
+        <MaterialIcons name="shopping-cart" size={24} color={darkMode ? '#00FF00' : '#006400'} />
       </TouchableOpacity>
     </LinearGradient>
   );
@@ -44,7 +54,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 15,
     paddingVertical: 10,
-    paddingTop: 25, // ✅ ADDED: slight padding at top for breathing room
+    paddingTop: 25, // breathing room
   },
   leftContainer: {
     flexDirection: 'row',
@@ -57,20 +67,15 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   title: {
-  fontSize: 18, // adjust for balance with icon
-  fontWeight: 'bold',
-  color: '#FFD700', // bright yellow (you can also try '#FFEB3B' for softer tone)
-  flexShrink: 1,
-
-  // fun typeface (depends on available fonts — works great with Expo)
-  fontFamily: 'ComicNeue-Bold', // try 'Pacifico-Regular', 'FredokaOne-Regular', etc.
-
-  // add text shadow for depth
-  textShadowColor: '#000',
-  textShadowOffset: { width: 2, height: 2 },
-  textShadowRadius: 3,
-},
-  // ✅ ADDED: rounded cart button (similar to LandingPage.js style)
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFD700',
+    flexShrink: 1,
+    fontFamily: 'ComicNeue-Bold',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 3,
+  },
   cartButton: {
     backgroundColor: '#fff',
     borderRadius: 20,
@@ -79,7 +84,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 2,
-    elevation: 3, // Android shadow
+    elevation: 3,
   },
 });
 

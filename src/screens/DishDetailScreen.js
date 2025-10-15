@@ -1,10 +1,13 @@
-// src/screens/DishDetailScreen.jsx
+// src/screens/DishDetailScreen.jsx 
 import React, { useContext } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 // ✅ Use CartContext to access cart functions
 import { CartContext } from '../context/CartContext';
+
+// ✅ ADDED: Import DarkModeContext for dark theme
+import { DarkModeContext } from '../context/DarkModeContext';
 
 export default function DishDetailScreen() {
   const navigation = useNavigation();
@@ -14,22 +17,44 @@ export default function DishDetailScreen() {
   // Get addItem function from CartContext
   const { addItem } = useContext(CartContext);
 
+  // ✅ ADDED: Read dark mode from context
+  const darkCtx = useContext(DarkModeContext) || {};
+  const darkMode = darkCtx.darkMode ?? darkCtx.isDarkMode ?? false;
+
   // If dish not passed, render nothing
   if (!dish) return null;
 
+  // ✅ Dynamic styles for dark mode
+  const dynamicStyles = {
+    container: {
+      backgroundColor: darkMode ? '#222' : '#FAF8E1', // dark background in dark mode
+    },
+    name: {
+      color: darkMode ? '#FFD700' : '#FF0000', // bright yellow for dark mode
+    },
+    price: {
+      color: darkMode ? '#FFD700' : '#444',
+    },
+    description: {
+      color: darkMode ? '#ccc' : '#666',
+    },
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, dynamicStyles.container]}>
       {/* --- Dish image --- */}
       <Image source={dish.image} style={styles.image} />
 
       {/* --- Dish name --- */}
-      <Text style={styles.name}>{dish.name}</Text>
+      <Text style={[styles.name, dynamicStyles.name]}>{dish.name}</Text>
 
       {/* --- Dish price --- */}
-      <Text style={styles.price}>${Number(dish.price).toFixed(2)}</Text>
+      <Text style={[styles.price, dynamicStyles.price]}>
+        ${Number(dish.price).toFixed(2)}
+      </Text>
 
       {/* --- Dish description --- */}
-      <Text style={styles.description}>
+      <Text style={[styles.description, dynamicStyles.description]}>
         A delicious Thai noodle dish made fresh with authentic ingredients.
         Enjoy bold flavors and vibrant colors in every bite!
       </Text>
@@ -82,7 +107,7 @@ export default function DishDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAF8E1',
+    backgroundColor: '#FAF8E1', // overridden dynamically
     alignItems: 'center',
     justifyContent: 'flex-start',
     padding: 16,
@@ -96,18 +121,18 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#FF0000',
+    color: '#FF0000', // overridden dynamically
     marginTop: 16,
     textAlign: 'center',
   },
   price: {
     fontSize: 18,
-    color: '#444',
+    color: '#444', // overridden dynamically
     marginTop: 6,
   },
   description: {
     fontSize: 15,
-    color: '#666',
+    color: '#666', // overridden dynamically
     marginTop: 12,
     textAlign: 'center',
     lineHeight: 22,

@@ -1,15 +1,31 @@
 // src/components/DishCard.js
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { DarkModeContext } from '../context/DarkModeContext'; // ✅ ADDED: import dark mode context
 
 // CHANGED:
-// - Added useNavigation & TouchableOpacity so this component handles its own press.
-// - DID NOT change any styling values — styles below match the original visual rules.
-// - IMPORTANT: TouchableOpacity is used without a style prop so it won't affect layout.
+// - Added useContext to read dark mode
+// - Updated card background and price text color in dark mode
+// - DID NOT change layout or main styling, only color adaptation for dark theme
 
 export default function DishCard({ dish }) {
   const navigation = useNavigation();
+  const darkCtx = useContext(DarkModeContext) || {}; // ✅ read dark mode
+  const darkMode = darkCtx.darkMode ?? darkCtx.isDarkMode ?? false;
+
+  // ✅ dynamic styles for dark mode
+  const dynamicStyles = {
+    card: {
+      backgroundColor: darkMode ? '#333' : '#fff', // dark gray for card in dark mode
+    },
+    price: {
+      color: darkMode ? '#FFD700' : '#333', // bright yellow in dark mode
+    },
+    name: {
+      color: darkMode ? '#fff' : '#000', // white text for dish name in dark mode
+    },
+  };
 
   return (
     <TouchableOpacity
@@ -19,13 +35,15 @@ export default function DishCard({ dish }) {
         navigation.navigate('DishDetail', dish);
       }}
     >
-      {/* --- ORIGINAL CARD CONTENT (styling unchanged) --- */}
-      <View style={styles.card}>
+      {/* --- ORIGINAL CARD CONTENT (styling mostly unchanged, dynamic colors applied) --- */}
+      <View style={[styles.card, dynamicStyles.card]}>
         {dish.image ? <Image source={dish.image} style={styles.image} /> : null}
 
         <View style={styles.info}>
-          <Text style={styles.name}>{dish.name}</Text>
-          <Text style={styles.price}>${Number(dish.price).toFixed(2)}</Text>
+          <Text style={[styles.name, dynamicStyles.name]}>{dish.name}</Text>
+          <Text style={[styles.price, dynamicStyles.price]}>
+            ${Number(dish.price).toFixed(2)}
+          </Text>
         </View>
       </View>
       {/* --- END ORIGINAL CONTENT --- */}
@@ -35,7 +53,7 @@ export default function DishCard({ dish }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#fff', // overridden dynamically
     borderRadius: 10,
     overflow: 'hidden',
     marginVertical: 8,
@@ -63,10 +81,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginRight: 8,
+    color: '#000', // overridden dynamically
   },
   price: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#333',
+    color: '#333', // overridden dynamically
   },
 });

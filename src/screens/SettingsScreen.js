@@ -1,24 +1,29 @@
-// SettingsScreen.js
+// src/screens/SettingsScreen.js
 import React, { useContext, useState, useEffect } from 'react';
 import {
+  ScrollView,
   View,
   Text,
   TextInput,
   Button,
   Alert,
-  StyleSheet,
-  ScrollView,
   Switch,
+  StyleSheet,
 } from 'react-native';
 import { ProfileContext } from '../context/ProfileContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DarkModeContext } from '../context/DarkModeContext';
 
-/*
-  SettingsScreen
-  - Edit profile (name, address, phone, credit card)
-  - Dark mode toggle saved in AsyncStorage
-*/
-
+/**
+ * SettingsScreen
+ * - Edit profile information (name, address, phone, credit card)
+ * - Toggle dark mode (app-wide)
+ * - Screen scrolls for smaller devices / keyboard
+ * 
+ * CHANGED:
+ * - Added ScrollView for scrolling
+ * - Integrated DarkModeContext toggle (default light)
+ * - Preserved all existing input fields and validations
+ */
 const maskCard = (num) => {
   const digits = (num || '').replace(/\D/g, '');
   const last4 = digits.slice(-4);
@@ -29,36 +34,34 @@ const maskCard = (num) => {
 export default function SettingsScreen() {
   const { profile, saveProfile } = useContext(ProfileContext);
 
+  // Dark mode context
+  const darkCtx = useContext(DarkModeContext) || {};
+  const darkMode = darkCtx.darkMode ?? darkCtx.isDarkMode ?? false;
+  const toggleDarkMode = darkCtx.toggleDarkMode ?? (() => {});
+
+  // Local form state
   const [name, setName] = useState(profile.name || '');
   const [address, setAddress] = useState(profile.address || '');
   const [phone, setPhone] = useState(profile.phone || '');
   const [cardNumber, setCardNumber] = useState('');
   const [cardMasked, setCardMasked] = useState(profile.cardNumberMasked || '');
   const [cardExpiry, setCardExpiry] = useState(profile.cardExpiry || '');
-  const [darkMode, setDarkMode] = useState(false);
 
-  // Load profile and dark mode from storage
+  // Sync form fields when profile updates
   useEffect(() => {
     setName(profile.name || '');
     setAddress(profile.address || '');
     setPhone(profile.phone || '');
     setCardMasked(profile.cardNumberMasked || '');
     setCardExpiry(profile.cardExpiry || '');
-
-    (async () => {
-      try {
-        const savedDarkMode = await AsyncStorage.getItem('@dark_mode');
-        if (savedDarkMode !== null) setDarkMode(savedDarkMode === 'true');
-      } catch (e) {
-        console.warn('Failed to load dark mode', e);
-      }
-    })();
   }, [profile]);
 
+  // Validators
   const validatePhone = (p) => /^[0-9\-\+\s\(\)]{7,20}$/.test(p);
   const validateExpiry = (e) => /^(0[1-9]|1[0-2])\/\d{2}$/.test(e);
 
-  const onSave = async () => {
+  // Save profile handler
+  const onSave = () => {
     if (!name.trim() || !address.trim()) {
       Alert.alert('Missing info', 'Please provide name and address.');
       return;
@@ -74,7 +77,6 @@ export default function SettingsScreen() {
 
     let masked = cardMasked;
     let last4 = profile.cardLast4;
-
     if (cardNumber.trim()) {
       const { masked: m, last4: l } = maskCard(cardNumber);
       masked = m;
@@ -93,18 +95,11 @@ export default function SettingsScreen() {
     saveProfile(newProfile);
     Alert.alert('Saved', 'Profile saved locally.');
     setCardNumber('');
-
-    // Save dark mode preference
-    try {
-      await AsyncStorage.setItem('@dark_mode', darkMode.toString());
-    } catch (e) {
-      console.warn('Failed to save dark mode', e);
-    }
   };
 
-  const toggleDarkMode = () => setDarkMode((prev) => !prev);
+  const onToggleDarkMode = () => toggleDarkMode();
 
-  // Styles based on dark mode
+  // Dynamic styles for dark mode
   const dynamicStyles = {
     container: { padding: 16, backgroundColor: darkMode ? '#222' : '#fff' },
     label: { fontWeight: '600', marginTop: 12, color: darkMode ? '#fff' : '#000' },
@@ -122,6 +117,7 @@ export default function SettingsScreen() {
 
   return (
     <ScrollView contentContainerStyle={dynamicStyles.container}>
+      {/* Name input */}
       <Text style={dynamicStyles.label}>Full name</Text>
       <TextInput
         style={dynamicStyles.input}
@@ -131,6 +127,7 @@ export default function SettingsScreen() {
         placeholderTextColor={darkMode ? '#888' : '#aaa'}
       />
 
+      {/* Address input */}
       <Text style={dynamicStyles.label}>Delivery address</Text>
       <TextInput
         style={[dynamicStyles.input, { height: 80 }]}
@@ -141,6 +138,7 @@ export default function SettingsScreen() {
         placeholderTextColor={darkMode ? '#888' : '#aaa'}
       />
 
+      {/* Phone input */}
       <Text style={dynamicStyles.label}>Phone</Text>
       <TextInput
         style={dynamicStyles.input}
@@ -151,9 +149,8 @@ export default function SettingsScreen() {
         placeholderTextColor={darkMode ? '#888' : '#aaa'}
       />
 
-      <Text style={dynamicStyles.label}>
-        Credit card (enter full number to update)
-      </Text>
+      {/* Credit card input */}
+      <Text style={dynamicStyles.label}>Credit card (enter full number to update)</Text>
       <TextInput
         style={dynamicStyles.input}
         value={cardNumber}
@@ -163,6 +160,7 @@ export default function SettingsScreen() {
         placeholderTextColor={darkMode ? '#888' : '#aaa'}
       />
 
+      {/* Expiry input */}
       <Text style={dynamicStyles.label}>Expiry (MM/YY)</Text>
       <TextInput
         style={dynamicStyles.input}
@@ -173,18 +171,23 @@ export default function SettingsScreen() {
         placeholderTextColor={darkMode ? '#888' : '#aaa'}
       />
 
-      <Text style={dynamicStyles.info}>Stored card: {cardMasked || 'none'}</Text>
+      {/* Stored masked card */}
+      <Text style={dynamicStyles.info}>
+        Stored card: {cardMasked || 'none'}
+      </Text>
 
       {/* Dark Mode Toggle */}
       <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16 }}>
         <Text style={[dynamicStyles.label, { marginRight: 8 }]}>Dark Mode</Text>
-        <Switch value={darkMode} onValueChange={toggleDarkMode} />
+        <Switch value={darkMode} onValueChange={onToggleDarkMode} />
       </View>
 
+      {/* Save button */}
       <View style={{ marginTop: 16 }}>
         <Button title="Save profile" onPress={onSave} />
       </View>
 
+      {/* Security note */}
       <Text style={dynamicStyles.note}>
         Note: For production, integrate a payment provider (Stripe, Braintree). Do not store raw card numbers.
       </Text>
