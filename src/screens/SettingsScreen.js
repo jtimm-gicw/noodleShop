@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { ProfileContext } from '../context/ProfileContext';
 import { DarkModeContext } from '../context/DarkModeContext';
+import { AuthContext } from '../context/AuthContext'; // NEW
 
 /**
  * SettingsScreen
@@ -33,6 +34,7 @@ const maskCard = (num) => {
 
 export default function SettingsScreen() {
   const { profile, saveProfile } = useContext(ProfileContext);
+  const { user, logout } = useContext(AuthContext); // NEW
 
   // Dark mode context
   const darkCtx = useContext(DarkModeContext) || {};
@@ -189,6 +191,11 @@ export default function SettingsScreen() {
         <Button title="Save profile" onPress={onSave} />
       </View>
 
+      <Text style={dynamicStyles.info}>Signed in as: {user?.email}</Text>
+      <View style={{marginTop:16}}>
+        <Button title="Log out" color="#B00020" onPress={logout}/>
+      </View>
+      
       {/* Security note */}
       <Text style={dynamicStyles.note}>
         Note: For production, integrate a payment provider (Stripe, Braintree). Do not store raw card numbers.

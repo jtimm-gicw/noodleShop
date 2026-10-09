@@ -1,75 +1,134 @@
-import React, { createContext, useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-/*
-  ProfileContext
-  - Provides app-wide profile state (name, address, phone, masked card info).
-  - Loads saved profile from AsyncStorage on mount and exposes save/clear helpers.
-  - IMPORTANT: For production, never store raw card numbers; use a payment provider/tokenization.
-*/
+ // src/context/ProfileContext.js
 
-// Create the context object that components will consume
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
+
+import Storage from '../utils/storage';
+import { AuthContext } from './AuthContext';
+
+// EXISTING: Create the profile context
 export const ProfileContext = createContext();
 
+// EXISTING: Default empty profile
+const empty = {
+  name: '',
+  address: '',
+  phone: '',
+  cardNumberMasked: '',
+  cardLast4: '',
+  cardExpiry: '',
+};
+
 export function ProfileProvider({ children }) {
-  // Local state for the profile
-  const [profile, setProfile] = useState({
-    name: '',
-    address: '',
-    phone: '',
-    cardNumberMasked: '', // only store masked/tokenized data, not full card numbers
-    cardLast4: '',
-    cardExpiry: '',
-  });
 
-  // Key used to persist profile to device storage
-  const STORAGE_KEY = '@user_profile_v1';
+  // FIXED: Read AuthContext safely.
+  // The provider should still be wrapped by AuthProvider.
+  const auth = useContext(AuthContext);
+  const user = auth?.user ?? null;
 
-  // useEffect: runs once on mount to load profile from AsyncStorage
+  // FIXED: Only create a user-specific storage key
+  // when a user is signed in.
+  const KEY = user
+    ? `@user_profile_v2_${user.id}`
+    : null;
+
+  // EXISTING: Profile state
+  const [profile, setProfile] = useState({ ...empty });
+
+  // UPDATED: Load the correct user's saved profile.
   useEffect(() => {
-    (async () => {
+
+    let active = true;
+
+    // No logged-in user:
+    // Reset the profile instead of accessing user.id.
+    if (!user || !KEY) {
+      setProfile({ ...empty });
+
+      return () => {
+        active = false;
+      };
+    }
+
+    const loadProfile = async () => {
       try {
-        const json = await AsyncStorage.getItem(STORAGE_KEY);
-        if (json) {
-          // Parse and set the saved profile into state
-          setProfile(JSON.parse(json));
+        const json = await Storage.getItem(KEY);
+
+        if (active) {
+          setProfile(
+            json
+              ? JSON.parse(json)
+              : { ...empty, name: user.name || '' }
+          );
         }
-      } catch (e) {
-        console.warn('Failed to load profile', e);
+      } catch (error) {
+        console.warn('Failed to load profile', error);
+
+        if (active) {
+          setProfile({
+            ...empty,
+            name: user.name || '',
+          });
+        }
       }
-    })();
-  }, []);
+    };
 
-  // saveProfile: updates state and persists to AsyncStorage
-  const saveProfile = async (newProfile) => {
-    try {
-      setProfile(newProfile); // update in-memory state
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newProfile)); // persist
-    } catch (e) {
-      console.warn('Failed to save profile', e);
+    // Reset state while switching accounts.
+    setProfile({ ...empty, name: user.name || '' });
+
+    loadProfile();
+
+    return () => {
+      active = false;
+    };
+
+  }, [KEY, user?.name]);
+
+  // EXISTING: Save profile for the signed-in user
+  const saveProfile = async (nextProfile) => {
+
+    if (!KEY) {
+      throw new Error('Please sign in before saving a profile.');
     }
+
+    await Storage.setItem(
+      KEY,
+      JSON.stringify(nextProfile)
+    );
+
+    setProfile(nextProfile);
   };
 
-  // clearProfile: resets state and removes stored profile
+  // EXISTING: Clear the signed-in user's profile
   const clearProfile = async () => {
-    try {
-      setProfile({
-        name: '',
-        address: '',
-        phone: '',
-        cardNumberMasked: '',
-        cardLast4: '',
-        cardExpiry: '',
-      });
-      await AsyncStorage.removeItem(STORAGE_KEY);
-    } catch (e) {
-      console.warn('Failed to clear profile', e);
+
+    if (!KEY) {
+      setProfile({ ...empty });
+      return;
     }
+
+    await Storage.removeItem(KEY);
+
+    setProfile({
+      ...empty,
+      name: user?.name || '',
+    });
   };
 
-  // Provide the profile object and helper functions to children
+  // EXISTING: Provide profile information to screens
   return (
-    <ProfileContext.Provider value={{ profile, saveProfile, clearProfile }}>
+    <ProfileContext.Provider
+      value={{
+        profile,
+        saveProfile,
+        clearProfile,
+      }}
+    >
       {children}
     </ProfileContext.Provider>
   );

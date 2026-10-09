@@ -1,101 +1,203 @@
-/* (central cart state */
 
-import React, { createContext, useState, useEffect } from 'react';
+ // src/context/CartContext.js
+
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+} from 'react';
+
 import { Alert } from 'react-native';
-import Storage from '../utils/storage'; // ✅ Uses custom helper for cross-platform storage
+import Storage from '../utils/storage';
 
-// Create the context
+// NEW: Authentication context
+import { AuthContext } from './AuthContext';
+
+// EXISTING: Create shopping cart context
 export const CartContext = createContext(null);
 
-// Provider component that wraps the app
 export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState([]); // array of { id, name, price, qty, image, ... }
-  const CART_KEY = 'TUKTUK_CART_v1';
 
-  // Load stored cart on mount
+  // NEW: Get signed-in user safely
+  const auth = useContext(AuthContext);
+  const user = auth?.user ?? null;
+
+  // FIXED: Do not access user.id when logged out
+  const CART_KEY = user
+    ? `TUKTUK_CART_v2_${user.id}`
+    : null;
+
+  // EXISTING: Cart items
+  const [cart, setCart] = useState([]);
+
+  // NEW: Track which account's cart has loaded
+  const [loadedKey, setLoadedKey] = useState(null);
+
+  // -----------------------------------------
+  // UPDATED: Load saved cart for each user
+  // -----------------------------------------
   useEffect(() => {
-    (async () => {
+    let active = true;
+
+    // Reset whenever the account changes
+    setCart([]);
+    setLoadedKey(null);
+
+    // No signed-in user: no cart to load
+    if (!CART_KEY) {
+      return () => {
+        active = false;
+      };
+    }
+
+    const loadCart = async () => {
       try {
-        // 🔹 Changed AsyncStorage to Storage (our custom helper)
-        // This ensures compatibility across Android, iOS, and Web.
-        // On native, it uses @react-native-async-storage/async-storage.
-        // On web, it automatically falls back to localStorage.
         const raw = await Storage.getItem(CART_KEY);
 
-        // 🔹 If data exists, parse and set it into state
-        if (raw) setCart(JSON.parse(raw));
-      } catch (e) {
-        // 🔹 Kept error handling as-is for debugging purposes
-        console.warn('Failed to load cart from storage', e);
-      }
-    })();
-  }, []);
+        if (active) {
+          const savedCart = raw ? JSON.parse(raw) : [];
+          setCart(Array.isArray(savedCart) ? savedCart : []);
+        }
+      } catch (error) {
+        console.warn('Failed to load cart', error);
 
-  // Save cart to storage every time it changes
+        if (active) {
+          setCart([]);
+        }
+      } finally {
+        if (active) {
+          setLoadedKey(CART_KEY);
+        }
+      }
+    };
+
+    loadCart();
+
+    return () => {
+      active = false;
+    };
+
+  }, [CART_KEY]);
+
+  // -----------------------------------------
+  // UPDATED: Save cart for signed-in user
+  // -----------------------------------------
   useEffect(() => {
-    (async () => {
-      try {
-        // 🔧 FIXED: replaced AsyncStorage with Storage
-        // Previously this line caused warnings because AsyncStorage was not defined.
-        // Storage uses native async-storage when available, otherwise it uses localStorage on web.
-        await Storage.setItem(CART_KEY, JSON.stringify(cart));
-      } catch (e) {
-        console.warn('Failed to save cart to storage', e);
-      }
-    })();
-  }, [cart]);
 
-  // Add an item to cart. If exists, increase qty.
+    // Do not overwrite storage before loading finishes
+    if (!CART_KEY || loadedKey !== CART_KEY) {
+      return;
+    }
+
+    const saveCart = async () => {
+      try {
+        await Storage.setItem(
+          CART_KEY,
+          JSON.stringify(cart)
+        );
+      } catch (error) {
+        console.warn('Failed to save cart', error);
+      }
+    };
+
+    saveCart();
+
+  }, [cart, CART_KEY, loadedKey]);
+
+  // -----------------------------------------
+  // EXISTING: Add item to cart
+  // -----------------------------------------
   const addItem = (item, qty = 1) => {
     setCart(prev => {
       const existing = prev.find(i => i.id === item.id);
+
       if (existing) {
-        return prev.map(i => i.id === item.id ? { ...i, qty: i.qty + qty } : i);
-      } else {
-        return [...prev, { ...item, qty }];
+        return prev.map(i =>
+          i.id === item.id
+            ? { ...i, qty: i.qty + qty }
+            : i
+        );
       }
+
+      return [...prev, { ...item, qty }];
     });
   };
 
-  // Remove entire item from cart
+  // EXISTING: Remove an item completely
   const removeItem = (id) => {
     setCart(prev => prev.filter(i => i.id !== id));
   };
 
-  // Change quantity (sets absolute qty; if qty <= 0 removes item)
+  // EXISTING: Set an item's quantity
   const setItemQty = (id, qty) => {
     if (qty <= 0) {
       removeItem(id);
       return;
     }
-    setCart(prev => prev.map(i => i.id === id ? { ...i, qty } : i));
+
+    setCart(prev =>
+      prev.map(i =>
+        i.id === id ? { ...i, qty } : i
+      )
+    );
   };
 
-  // Increment / decrement helper
+  // EXISTING: Increase quantity
   const increment = (id) => {
-    setCart(prev => prev.map(i => i.id === id ? { ...i, qty: i.qty + 1 } : i));
-  };
-  const decrement = (id) => {
-    setCart(prev => prev.map(i => i.id === id ? { ...i, qty: Math.max(1, i.qty - 1) } : i));
+    setCart(prev =>
+      prev.map(i =>
+        i.id === id
+          ? { ...i, qty: i.qty + 1 }
+          : i
+      )
+    );
   };
 
-  // Clear cart (with optional confirmation)
+  // EXISTING: Decrease quantity
+  const decrement = (id) => {
+    setCart(prev =>
+      prev.map(i =>
+        i.id === id
+          ? { ...i, qty: Math.max(1, i.qty - 1) }
+          : i
+      )
+    );
+  };
+
+  // EXISTING: Clear shopping cart
   const clearCart = (confirm = false) => {
     if (confirm) {
-      Alert.alert('Clear cart', 'Are you sure you want to empty your cart?', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Yes', style: 'destructive', onPress: () => setCart([]) },
-      ]);
+      Alert.alert(
+        'Clear cart',
+        'Are you sure you want to empty your cart?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Yes',
+            style: 'destructive',
+            onPress: () => setCart([]),
+          },
+        ]
+      );
     } else {
       setCart([]);
     }
   };
 
-  // Compute totals
-  const itemCount = cart.reduce((s, i) => s + i.qty, 0);
-  const subTotal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+  // EXISTING: Calculate item count
+  const itemCount = cart.reduce(
+    (sum, item) => sum + item.qty,
+    0
+  );
 
-  // Value provided to consumers
+  // EXISTING: Calculate subtotal
+  const subTotal = cart.reduce(
+    (sum, item) => sum + item.price * item.qty,
+    0
+  );
+
+  // EXISTING: Provide cart functions to screens
   const value = {
     cart,
     addItem,
@@ -108,5 +210,9 @@ export const CartProvider = ({ children }) => {
     subTotal,
   };
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+  return (
+    <CartContext.Provider value={value}>
+      {children}
+    </CartContext.Provider>
+  );
 };
