@@ -10,7 +10,10 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
 // Safe area & gesture handler
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 // EXISTING: Components & screens
@@ -54,21 +57,33 @@ const Tab = createBottomTabNavigator();
   - Orders tab for tracking simulated deliveries
 */
 function MainTabs() {
+  // Get the safe area around the screen.
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={{
         header: () => <Header />,
-        headerStyle: { height: 80 },
-        tabBarStyle: { backgroundColor: '#1A1A1A' },
+
+        tabBarStyle: {
+          backgroundColor: '#1A1A1A',
+
+          // Add space for Android's navigation bar.
+          paddingBottom: Math.max(insets.bottom, 10),
+
+          // Give icons and labels enough room.
+          height: 65 + insets.bottom,
+        },
+
         tabBarActiveTintColor: '#FFA500',
         tabBarInactiveTintColor: '#888',
+
         tabBarLabelStyle: {
           fontSize: 14,
           fontWeight: '700',
         },
       }}
     >
-      {/* EXISTING: Home tab */}
       <Tab.Screen
         name="HomeTab"
         component={HomeScreen}
@@ -76,59 +91,40 @@ function MainTabs() {
           title: 'Home',
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons
-              name="home-outline"
-              color={color}
-              size={size}
-            />
+            <Ionicons name="home-outline" color={color} size={size} />
           ),
         }}
       />
 
-      {/* EXISTING: Cart tab */}
       <Tab.Screen
         name="CartTab"
         component={CartScreen}
         options={{
           title: 'Cart',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons
-              name="cart-outline"
-              color={color}
-              size={size}
-            />
+            <Ionicons name="cart-outline" color={color} size={size} />
           ),
         }}
       />
 
-      {/* NEW: Orders tab */}
       <Tab.Screen
         name="OrdersTab"
         component={OrdersScreen}
         options={{
           title: 'Orders',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons
-              name="receipt-outline"
-              color={color}
-              size={size}
-            />
+            <Ionicons name="receipt-outline" color={color} size={size} />
           ),
         }}
       />
 
-      {/* EXISTING: Settings tab */}
       <Tab.Screen
         name="SettingsTab"
         component={SettingsScreen}
         options={{
           tabBarLabel: 'Settings',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons
-              name="settings-outline"
-              color={color}
-              size={size}
-            />
+            <Ionicons name="settings-outline" color={color} size={size} />
           ),
         }}
       />

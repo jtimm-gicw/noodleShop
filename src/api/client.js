@@ -1,7 +1,7 @@
 // EDIT THIS ADDRESS to match your testing device (see GUIDE.md).
 import { Platform } from 'react-native';
 
-const HOST = '172.18.109.8'; 
+const HOST = '10.20.217.134'; 
 
 // Web connects using localhost.
 // Android connects using your computer's Wi-Fi IP address.
