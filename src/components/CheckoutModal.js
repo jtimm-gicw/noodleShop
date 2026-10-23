@@ -29,8 +29,7 @@ export default function CheckoutModal({ visible, onClose, orderItems = [], onCon
     }
 
     // ✅ Mock confirmation action
-    Alert.alert('Order placed', `Order totaling $${subtotal.toFixed(2)} placed (mock).`);
-    onConfirm && onConfirm();
+    onConfirm?.(); // CartScreen will save order first and show result
   };
 
   return (
@@ -45,7 +44,7 @@ export default function CheckoutModal({ visible, onClose, orderItems = [], onCon
               style={styles.editProfileBtn}
               onPress={() => {
                 onClose(); // Close modal
-                navigation?.navigate('Settings'); // Navigate to Settings/Profile page
+                navigation?.navigate('Main', { screen: 'SettingsTab' });// Navigate to Settings/Profile page
               }}
             >
               <Text style={styles.editProfileText}>✏️ Edit Profile</Text>

@@ -1,6 +1,7 @@
-// App.js
-import React from 'react';
-import { StyleSheet } from 'react-native';
+
+ // App.js
+import React, { useContext } from 'react';
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
 
 // Navigation
 import { NavigationContainer } from '@react-navigation/native';
@@ -9,10 +10,13 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
 // Safe area & gesture handler
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-// Components & screens
+// EXISTING: Components & screens
 import Header from './src/components/Header/Header';
 import LandingPage from './src/components/LandingPage/LandingPage';
 import HomeScreen from './src/screens/HomeScreen';
@@ -20,38 +24,77 @@ import DishDetailScreen from './src/screens/DishDetailScreen';
 import CartScreen from './src/screens/CartScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 
-// Context
-import { CartProvider } from './src/context/CartContext'; // ✅ Cart import
-import { ProfileProvider } from './src/context/ProfileContext'; // ✅ Profile import
-import { DarkModeProvider } from './src/context/DarkModeContext'; // ✅ Dark Mode import
+// NEW: Authentication and order tracking screens
+import AuthScreen from './src/screens/AuthScreen';
+import OrdersScreen from './src/screens/OrdersScreen';
+
+// EXISTING: Context providers
+import { CartProvider } from './src/context/CartContext';
+import { ProfileProvider } from './src/context/ProfileContext';
+import { DarkModeProvider } from './src/context/DarkModeContext';
+
+// NEW: Authentication provider and context
+import {
+  AuthProvider,
+  AuthContext,
+} from './src/context/AuthContext';
 
 // Stack & Tab creators
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+/*
+  MainTabs
+
+  EXISTING:
+  - Home tab
+  - Cart tab
+  - Settings tab
+  - Custom Header
+  - Original navigation colors
+
+  NEW:
+  - Orders tab for tracking simulated deliveries
+*/
 function MainTabs() {
+  // Get the safe area around the screen.
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={{
         header: () => <Header />,
-        headerStyle: { height: 80 },
-        tabBarStyle: { backgroundColor: '#1A1A1A' },
+
+        tabBarStyle: {
+          backgroundColor: '#1A1A1A',
+
+          // Add space for Android's navigation bar.
+          paddingBottom: Math.max(insets.bottom, 10),
+
+          // Give icons and labels enough room.
+          height: 65 + insets.bottom,
+        },
+
         tabBarActiveTintColor: '#FFA500',
         tabBarInactiveTintColor: '#888',
-        tabBarLabelStyle: { fontSize: 14, fontWeight: '700' },
+
+        tabBarLabelStyle: {
+          fontSize: 14,
+          fontWeight: '700',
+        },
       }}
     >
       <Tab.Screen
-  name="HomeTab"
-  component={HomeScreen}
-  options={{
-    title: 'Home',
-    headerShown: false, // ✅ hides the native header so only your custom <Header /> shows
-    tabBarIcon: ({ color, size }) => (
-      <Ionicons name="home-outline" color={color} size={size} />
-    ),
-  }}
-/>
+        name="HomeTab"
+        component={HomeScreen}
+        options={{
+          title: 'Home',
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home-outline" color={color} size={size} />
+          ),
+        }}
+      />
 
       <Tab.Screen
         name="CartTab"
@@ -63,6 +106,18 @@ function MainTabs() {
           ),
         }}
       />
+
+      <Tab.Screen
+        name="OrdersTab"
+        component={OrdersScreen}
+        options={{
+          title: 'Orders',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="receipt-outline" color={color} size={size} />
+          ),
+        }}
+      />
+
       <Tab.Screen
         name="SettingsTab"
         component={SettingsScreen}
@@ -77,63 +132,132 @@ function MainTabs() {
   );
 }
 
-export default function App() { 
+/*
+  NEW: AppNavigator
+
+  Determines which screens a customer can access.
+
+  If authentication is still loading:
+    Show a loading indicator.
+
+  If the customer is not signed in:
+    Show AuthScreen.
+
+  If the customer is signed in:
+    Show existing app screens.
+
+  This prevents ProfileProvider and CartProvider
+  from trying to access an account before login.
+*/
+function AppNavigator() {
+
+  // NEW: Read authentication information
+  const { user, loading } = useContext(AuthContext);
+
+  // NEW: Wait for saved authentication to load
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator
+          size="large"
+          color="#FFA500"
+        />
+      </View>
+    );
+  }
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator
+        screenOptions={{
+          header: () => <Header />,
+          headerStyle: { height: 80 },
+        }}
+      >
+        {!user ? (
+          // NEW: Show authentication when signed out
+          <Stack.Screen
+            name="Auth"
+            component={AuthScreen}
+            options={{ headerShown: false }}
+          />
+        ) : (
+          <>
+            {/* EXISTING: Landing page */}
+            <Stack.Screen
+              name="Landing"
+              component={LandingPage}
+              options={{ headerShown: false }}
+            />
+
+            {/* EXISTING: Main tabs */}
+            <Stack.Screen
+              name="Main"
+              component={MainTabs}
+              options={{ headerShown: false }}
+            />
+
+            {/* EXISTING: Dish details */}
+            <Stack.Screen
+              name="DishDetail"
+              component={DishDetailScreen}
+              options={{ title: 'Dish Details' }}
+            />
+
+            {/* EXISTING: Standalone cart route */}
+            <Stack.Screen
+              name="Cart"
+              component={CartScreen}
+              options={{ title: 'Your Cart' }}
+            />
+          </>
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+/*
+  App
+
+  UPDATED PROVIDER ORDER:
+
+  DarkModeProvider
+    └── AuthProvider
+          └── ProfileProvider
+                └── CartProvider
+                      └── AppNavigator
+
+  IMPORTANT:
+  ProfileProvider and CartProvider depend on AuthContext.
+  Therefore, AuthProvider MUST wrap both providers.
+*/
+export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
 
-        {/* 
-          ✅ NEW: Wrap the app with DarkModeProvider so dark-mode state is available
-                 across the whole app (Settings, Header, Tabs, Screens).
-                 Keep this outermost (or at least outside Profile/Cart) so all
-                 children can read the theme.
-        */}
+        {/* EXISTING: App-wide dark mode */}
         <DarkModeProvider>
 
-          {/* 
-            ✅ Existing: ProfileProvider stays as before — it provides profile state.
-            Note: DarkModeProvider is outside it, so profile screens can also read theme.
-          */}
-          <ProfileProvider>
+          {/* NEW: Authentication available to child providers */}
+          <AuthProvider>
 
-            {/* 
-              ✅ Existing: CartProvider stays as before.
-              The nesting order is now: DarkMode -> Profile -> Cart -> Navigation
-            */}
-            <CartProvider>
-              <NavigationContainer>
-                <Stack.Navigator
-                  initialRouteName="Landing"
-                  screenOptions={{
-                    header: () => <Header />,
-                    headerStyle: { height: 80 },
-                  }}
-                >
-                  <Stack.Screen
-                    name="Landing"
-                    component={LandingPage}
-                    options={{ headerShown: false }}
-                  />
-                  <Stack.Screen
-                    name="Main"
-                    component={MainTabs}
-                    options={{ headerShown: false }}
-                  />
-                  <Stack.Screen
-                    name="DishDetail"
-                    component={DishDetailScreen}
-                    options={{ title: 'Dish Details' }}
-                  />
-                  <Stack.Screen
-                    name="Cart"
-                    component={CartScreen}
-                    options={{ title: 'Your Cart' }}
-                  />
-                </Stack.Navigator>
-              </NavigationContainer>
-            </CartProvider>
+            {/* EXISTING: Customer profile */}
+            <ProfileProvider>
 
-          </ProfileProvider>
+              {/* EXISTING: Shopping cart */}
+              <CartProvider>
+
+                {/* UPDATED: Authentication-aware navigation */}
+                <AppNavigator />
+
+              </CartProvider>
+
+            </ProfileProvider>
+
+          </AuthProvider>
+
         </DarkModeProvider>
 
       </SafeAreaProvider>
@@ -141,10 +265,18 @@ export default function App() {
   );
 }
 
+// EXISTING: Original styles preserved
+// NEW: Added loadingContainer style
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#1A1A1A',
     alignItems: 'center',
     justifyContent: 'center',
   },

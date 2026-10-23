@@ -81,6 +81,8 @@ npx expo start
     🍏 On *iOS*: Use Expo Go or the iOS simulator
 
 🧠 **UML Diagram & Wireframe**
+![Final UML Diagram](./assets/noodleShop-UML_final.png)
+![Final Wireframe](./assets/noodleShop_wf_final.png)
 ![Wireframe p1](./assets/noodle-wf1.jpg)
 ![Wireframe p2](./assets/noodle-wf2.jpg)
 ![UML Diagram](./assets/uml-diagram.jpg)
